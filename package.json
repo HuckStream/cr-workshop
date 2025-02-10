@@ -1,0 +1,27 @@
+{
+  "name": "cr-workshop",
+  "author": "Chris Koning <ckoning@pulumi.com>",
+  "license": "MPL-2.0",
+  "version": "0.1.0",
+  "description": "Workshop example deploying a VPC, DynamoDB, RDS Aurora, and Databricks to AWS",
+  "repository": "github:HuckStream/cr-workshop",
+  "bugs": {
+    "url": "https://github.com/HuckStream/cr-workshop/issues",
+    "email": "ckoning@pulumi.com"
+  },
+  "main": "index.ts",
+  "engines": {
+    "node": "20"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@pulumi/aws": "^6.68.0",
+    "@pulumi/awsx": "^2.21.0",
+    "@pulumi/pulumi": "^3.149.0",
+    "@pulumi/pulumiservice": "^0.29.0",
+    "@pulumi/tls": "^5.1.0"
+  }
+}
