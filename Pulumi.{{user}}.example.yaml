@@ -1,0 +1,4 @@
+environment:
+  - aws/wksp
+config:
+  environment: {{user}}
