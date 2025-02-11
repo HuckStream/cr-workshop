@@ -1,13 +1,14 @@
-import * as pulumi from "@pulumi/pulumi";
-import * as aws from "@pulumi/aws";
+import * as pulumi from "@pulumi/pulumi"
+import * as aws from "@pulumi/aws"
 
-import { Vpc } from "./lib/Vpc";
+import { Vpc } from "./lib/Vpc"
+import { PingInstance } from "./lib/PingInstance"
 
 // Main entrypoint
 export = async () => {
 
   // Assemble resource name from context pieces
-  const config = new pulumi.Config();
+  const config = new pulumi.Config()
   const namespace: string = config.require("namespace")
   const environment: string = config.require("environment")
   const name: string = config.require("name")
@@ -17,16 +18,22 @@ export = async () => {
     name,
   ].join("-")
 
+  // Get the VPC CIDR from config
+  const vpcCidr: string = config.require("vpcCidr")
+
   // Get the current AWS region
   const region = await aws.getRegion().then(region => region.name)
 
-  // Get the peering info
+  // Reference bootstrapping stack
   const openVpnStack = new pulumi.StackReference(config.require("openVpnStack"))
+
+
+  // Get the peering info
   const openVpnVpcId = openVpnStack.getOutput("vpcId")
   const openVpnVpcCidr = openVpnStack.getOutput("vpcCidr")
   // Need to cast from Output<any> to Output<RouteTable[]>
   const openVpnVpcRtbls = openVpnStack.getOutput("privateRouteTables").apply(rtbls => {
-    return rtbls as aws.ec2.RouteTable[];
+    return rtbls as aws.ec2.RouteTable[]
   })
 
   // Create VPC
@@ -37,7 +44,7 @@ export = async () => {
     name,
 
     // Networking configurations
-    cidr: "10.129.0.0/16",
+    cidr: vpcCidr,
     privateAppSubnets: true,
     isolatedDataSubnets: true,
 
@@ -63,8 +70,59 @@ export = async () => {
     ]
   })
 
+  const privateAppSubnetId = vpc.privateSubnetIds.apply(ids => ids[0])
+  const isolatedDataSubnetId = vpc.isolatedSubnetIds.apply(ids => ids[1])
+
+
+
+  // Get the ping instance config
+  const pingAmiId = openVpnStack.getOutput("pingAmiId")
+  const pingIamRole = openVpnStack.getOutput("pingIamRole")
+
+  // Create main ping instances
+  const privateAppPing = new PingInstance("ping-private-app",{
+    // Context
+    namespace,
+    environment,
+    name: [name,"ping","private","app"].join("-"),
+
+    // Networking
+    vpcId: vpc.vpcId,
+    subnetId: privateAppSubnetId,
+
+    // Instance config
+    amiId: pingAmiId,
+
+    // IAM permissions
+    instanceProfile: pingIamRole,
+  })
+
+  const privateDataPing = new PingInstance("ping-isolated-data",{
+    // Context
+    namespace,
+    environment,
+    name: [name,"ping","isolated","data"].join("-"),
+
+    // Networking
+    vpcId: vpc.vpcId,
+    subnetId: isolatedDataSubnetId,
+
+    // Instance config
+    amiId: pingAmiId,
+
+    // IAM permissions
+    instanceProfile: pingIamRole,
+  })
+
+
   return {
-    vpcRouteTables: vpc.routeTables,
-    openVpnVpcId
+    // Main VPC
+    vpcId: vpc.vpcId,
+    vpcCidr: vpcCidr,
+    publicSubnetIds: vpc.publicSubnetIds,
+    privateSubnetIds: vpc.privateSubnetIds,
+    isolatedSubnetIds: vpc.isolatedSubnetIds,
+    routeTables: vpc.routeTables,
+    privateRouteTables: vpc.privateRouteTables
   }
 }
