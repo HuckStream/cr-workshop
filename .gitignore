@@ -139,3 +139,7 @@ dist
 
 # Zip archives
 **/*.zip
+
+# Ignore stack configs
+Pulumi.**.yaml
+!Pulumi.{{user}}.yaml
