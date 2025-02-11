@@ -2,6 +2,7 @@ import * as pulumi from "@pulumi/pulumi"
 import * as aws from "@pulumi/aws"
 
 import { Vpc } from "./lib/Vpc"
+import { PingInstance } from "./lib/PingInstance"
 
 // Main entrypoint
 export = async () => {
@@ -23,8 +24,11 @@ export = async () => {
   // Get the current AWS region
   const region = await aws.getRegion().then(region => region.name)
 
-  // Get the peering info
+  // Reference bootstrapping stack
   const openVpnStack = new pulumi.StackReference(config.require("openVpnStack"))
+
+
+  // Get the peering info
   const openVpnVpcId = openVpnStack.getOutput("vpcId")
   const openVpnVpcCidr = openVpnStack.getOutput("vpcCidr")
   // Need to cast from Output<any> to Output<RouteTable[]>
@@ -65,6 +69,51 @@ export = async () => {
       "ssmmessages",
     ]
   })
+
+  const privateAppSubnetId = vpc.privateSubnetIds.apply(ids => ids[0])
+  const isolatedDataSubnetId = vpc.isolatedSubnetIds.apply(ids => ids[1])
+
+
+
+  // Get the ping instance config
+  const pingAmiId = openVpnStack.getOutput("pingAmiId")
+  const pingIamRole = openVpnStack.getOutput("pingIamRole")
+
+  // Create main ping instances
+  const privateAppPing = new PingInstance("ping-private-app",{
+    // Context
+    namespace,
+    environment,
+    name: [name,"ping","private","app"].join("-"),
+
+    // Networking
+    vpcId: vpc.vpcId,
+    subnetId: privateAppSubnetId,
+
+    // Instance config
+    amiId: pingAmiId,
+
+    // IAM permissions
+    instanceProfile: pingIamRole,
+  })
+
+  const privateDataPing = new PingInstance("ping-isolated-data",{
+    // Context
+    namespace,
+    environment,
+    name: [name,"ping","isolated","data"].join("-"),
+
+    // Networking
+    vpcId: vpc.vpcId,
+    subnetId: isolatedDataSubnetId,
+
+    // Instance config
+    amiId: pingAmiId,
+
+    // IAM permissions
+    instanceProfile: pingIamRole,
+  })
+
 
   return {
     // Main VPC
