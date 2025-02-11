@@ -1,13 +1,13 @@
-import * as pulumi from "@pulumi/pulumi";
-import * as aws from "@pulumi/aws";
+import * as pulumi from "@pulumi/pulumi"
+import * as aws from "@pulumi/aws"
 
-import { Vpc } from "./lib/Vpc";
+import { Vpc } from "./lib/Vpc"
 
 // Main entrypoint
 export = async () => {
 
   // Assemble resource name from context pieces
-  const config = new pulumi.Config();
+  const config = new pulumi.Config()
   const namespace: string = config.require("namespace")
   const environment: string = config.require("environment")
   const name: string = config.require("name")
@@ -26,7 +26,7 @@ export = async () => {
   const openVpnVpcCidr = openVpnStack.getOutput("vpcCidr")
   // Need to cast from Output<any> to Output<RouteTable[]>
   const openVpnVpcRtbls = openVpnStack.getOutput("privateRouteTables").apply(rtbls => {
-    return rtbls as aws.ec2.RouteTable[];
+    return rtbls as aws.ec2.RouteTable[]
   })
 
   // Create VPC
