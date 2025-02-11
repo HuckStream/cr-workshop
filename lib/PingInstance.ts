@@ -1,6 +1,7 @@
 import * as aws from "@pulumi/aws"
 import * as pulumi from "@pulumi/pulumi"
 
+
 export interface PingInstanceInputs {
   namespace: string
   environment: string
@@ -16,11 +17,19 @@ export interface PingInstanceInputs {
   instanceProfile?: pulumi.Input<string>
 }
 
+
+export interface PingInstanceOutputs {
+  securityGroupId: pulumi.Output<string>
+  publicIp: pulumi.Output<string>
+  privateIp: pulumi.Output<string>
+}
+
+
 export class PingInstance extends pulumi.ComponentResource {
   // Context inputs
-  public readonly namespace: pulumi.Output<string>
-  public readonly environment: pulumi.Output<string>
-  public readonly name: pulumi.Output<string>
+  public readonly namespace: string
+  public readonly environment: string
+  public readonly name: string
 
   protected baseName: string
 
@@ -44,22 +53,23 @@ export class PingInstance extends pulumi.ComponentResource {
     super("huckstream:aws:pingback", name, args, opts)
 
     // Set context details
-    this.namespace = pulumi.output(args.name)
-    this.environment = pulumi.output(args.environment)
-    this.name = pulumi.output(args.name)
+    this.namespace = args.namespace
+    this.environment = args.environment
+    this.name = args.name
 
     this.baseName = [
-      args.namespace,
-      args.environment,
-      args.name,
+      this.namespace,
+      this.environment,
+      this.name,
     ].join("-")
 
     // Set tags
     const baseTags = {
-      Namespace: args.namespace,
-      Environment: args.environment,
+      Namespace: this.namespace,
+      Environment: this.environment,
       Name: this.baseName
     }
+
 
     // Set networking config
     this.vpcId = args.vpcId
@@ -105,6 +115,7 @@ export class PingInstance extends pulumi.ComponentResource {
 
     this.securityGroupId = sg.id
 
+
     // Create the EC2 instance
     const ec2 = new aws.ec2.Instance(this.baseName, {
       // Networking config
@@ -143,6 +154,7 @@ export class PingInstance extends pulumi.ComponentResource {
 
     this.publicIp = ec2.publicIp
     this.privateIp = ec2.privateIp
+
 
     // Register outputs
     this.registerOutputs({

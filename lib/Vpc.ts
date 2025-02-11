@@ -23,11 +23,24 @@ export interface VpcInputs {
   interfaceEndpoints?: string[]
 }
 
+
+export interface VpcOutputs {
+  vpdId: pulumi.Output<string>
+  publicSubnetIds:  pulumi.Output<string[]>
+  privateSubnetIds: pulumi.Output<string[]>
+  isolatedSubnetIds: pulumi.Output<string[]>
+  routeTables: pulumi.Output<aws.ec2.RouteTable[]>
+  privateRouteTables: pulumi.Output<aws.ec2.RouteTable[]>
+  dynamodbEndpointId: pulumi.Output<string>
+  s3EndpointId: pulumi.Output<string>
+}
+
+
 export class Vpc extends pulumi.ComponentResource {
   // Context inputs
-  public readonly namespace: pulumi.Output<string>
-  public readonly environment: pulumi.Output<string>
-  public readonly name: pulumi.Output<string>
+  public readonly namespace: string
+  public readonly environment: string
+  public readonly name: string
 
   protected baseName: string
 
@@ -38,20 +51,22 @@ export class Vpc extends pulumi.ComponentResource {
   public readonly isolatedSubnetIds: pulumi.Output<string[]>
   public readonly routeTables: pulumi.Output<aws.ec2.RouteTable[]>
   public readonly privateRouteTables: pulumi.Output<aws.ec2.RouteTable[]>
+  public readonly dynamodbEndpointId: pulumi.Output<string>
+  public readonly s3EndpointId: pulumi.Output<string>
 
   // Constructor
   constructor(name: string, args: VpcInputs, opts?: pulumi.ComponentResourceOptions) {
     super("huckstream:aws:vpc", name, args, opts)
 
     // Set context details
-    this.namespace = pulumi.output(args.name)
-    this.environment = pulumi.output(args.environment)
-    this.name = pulumi.output(args.name)
+    this.namespace = args.namespace
+    this.environment = args.environment
+    this.name = args.name
 
     this.baseName = [
-      args.namespace,
-      args.environment,
-      args.name,
+      this.namespace,
+      this.environment,
+      this.name,
     ].join("-")
 
     // Set tags
@@ -60,6 +75,7 @@ export class Vpc extends pulumi.ComponentResource {
       Environment: args.environment,
       Name: this.baseName
     }
+
 
     // Create the subnet specs
     const subnetSpecs:awsx.types.input.ec2.SubnetSpecArgs[] = []
@@ -104,9 +120,11 @@ export class Vpc extends pulumi.ComponentResource {
       subnetSpecs.push(isolatedDataSubnets)
     }
 
+
     // Set NAT Gateway strategy
     const natGwStrategy = ( args.publicSubnets && (args.privateAppSubnets || args.privateDataSubnets) ) ?
                           awsx.ec2.NatGatewayStrategy.Single : awsx.ec2.NatGatewayStrategy.None
+
 
     // Create the VPC
     const vpc = new awsx.ec2.Vpc(this.baseName, {
@@ -167,6 +185,9 @@ export class Vpc extends pulumi.ComponentResource {
       parent: this
     })
 
+    this.dynamodbEndpointId = dynamodbEndpoint.id
+
+
     // S3
     const s3Endpoint = new aws.ec2.VpcEndpoint("s3", {
       vpcId: vpc.vpcId,
@@ -181,6 +202,9 @@ export class Vpc extends pulumi.ComponentResource {
     {
       parent: this
     })
+
+    this.s3EndpointId = s3Endpoint.id
+
 
     // Interface Endpoints
     // Security group
@@ -237,6 +261,7 @@ export class Vpc extends pulumi.ComponentResource {
       interfaceEndpoints.push(vpce)
     })
 
+
     // Configure the VPC default route table
     const defaultRouteTable = new aws.ec2.DefaultRouteTable("defaultRouteTable", {
       defaultRouteTableId: vpc.vpc.defaultRouteTableId,
@@ -246,6 +271,7 @@ export class Vpc extends pulumi.ComponentResource {
     {
       parent: this
     })
+
 
     // Configure the VPC default security group
     const defaultSecurityGroup = new aws.ec2.DefaultSecurityGroup("defaultSecurityGroup", {
@@ -301,7 +327,6 @@ export class Vpc extends pulumi.ComponentResource {
         routeTables.apply(
           routeTables => {
             routeTables.forEach(routeTable => {
-              // routeTable.id.apply(routeTableId => {
                 const route = new aws.ec2.Route(`main-${routeTable.id}-${args.name}`,{
                   routeTableId: routeTable.id,
                   destinationCidrBlock: args.cidr,
@@ -310,11 +335,11 @@ export class Vpc extends pulumi.ComponentResource {
                 {
                   parent: openVpnVpc
                 })
-              // })
             })
           })
       }
     }
+
 
     // Register outputs
     this.registerOutputs({
@@ -323,7 +348,9 @@ export class Vpc extends pulumi.ComponentResource {
       privateSubnetIds: this.privateSubnetIds,
       isolatedSubnetIds: this.isolatedSubnetIds,
       routeTables: this.routeTables,
-      privateRouteTables: this.privateRouteTables
+      privateRouteTables: this.privateRouteTables,
+      dynamodbEndpointId: this.dynamodbEndpointId,
+      s3EndpointId: this.dynamodbEndpointId,
     })
   }
 }
