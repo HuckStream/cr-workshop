@@ -3,6 +3,7 @@ import * as aws from "@pulumi/aws"
 
 import { Vpc } from "./lib/Vpc"
 import { PingInstance } from "./lib/PingInstance"
+import { EncryptedBucket } from "./lib/EncryptedBucket"
 
 // Main entrypoint
 export = async () => {
@@ -115,6 +116,20 @@ export = async () => {
   })
 
 
+  // S3 Bucket
+  const s3Bucket = new EncryptedBucket("encrypted-bucket",{
+    namespace,
+    environment,
+    name,
+
+    vpceId: vpc.s3EndpointId,
+  },
+  {
+    parent: this
+  })
+
+
+  // Set outputs
   return {
     // Main VPC
     vpcId: vpc.vpcId,
