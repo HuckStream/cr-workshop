@@ -23,6 +23,8 @@ config:
   openVpnStack:
     description: The name of the Pulumi stack that deploys the OpenVPN resources
     default: HuckStream/CR-Workshop-Prep/main
+  vpcCidr:
+    description: The CIDR to use for the VPC
 template:
   config:
     aws:region:

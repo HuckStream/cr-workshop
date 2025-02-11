@@ -17,6 +17,9 @@ export = async () => {
     name,
   ].join("-")
 
+  // Get the VPC CIDR from config
+  const vpcCidr: string = config.require("vpcCidr")
+
   // Get the current AWS region
   const region = await aws.getRegion().then(region => region.name)
 
@@ -37,7 +40,7 @@ export = async () => {
     name,
 
     // Networking configurations
-    cidr: "10.129.0.0/16",
+    cidr: vpcCidr,
     privateAppSubnets: true,
     isolatedDataSubnets: true,
 
@@ -64,7 +67,13 @@ export = async () => {
   })
 
   return {
-    vpcRouteTables: vpc.routeTables,
-    openVpnVpcId
+    // Main VPC
+    vpcId: vpc.vpcId,
+    vpcCidr: vpcCidr,
+    publicSubnetIds: vpc.publicSubnetIds,
+    privateSubnetIds: vpc.privateSubnetIds,
+    isolatedSubnetIds: vpc.isolatedSubnetIds,
+    routeTables: vpc.routeTables,
+    privateRouteTables: vpc.privateRouteTables
   }
 }

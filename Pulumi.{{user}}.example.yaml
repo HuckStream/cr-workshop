@@ -2,3 +2,4 @@ environment:
   - aws/wksp
 config:
   environment: {{user}}
+  vpcCidr: {{vpcCidr}}
