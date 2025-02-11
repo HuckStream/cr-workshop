@@ -4,6 +4,8 @@ import * as aws from "@pulumi/aws"
 import { Vpc } from "./lib/Vpc"
 import { PingInstance } from "./lib/PingInstance"
 import { EncryptedBucket } from "./lib/EncryptedBucket"
+import { AuroraPostgres } from "./lib/AuroraPostgres"
+
 
 // Main entrypoint
 export = async () => {
@@ -123,6 +125,21 @@ export = async () => {
     name,
 
     vpceId: vpc.s3EndpointId,
+  })
+
+
+  // RDS Cluster
+  const db = new AuroraPostgres("postgres",{
+    namespace,
+    environment,
+    name,
+
+    dbInstanceClass: "db.t4g.medium",
+    version: "16.4",
+
+    vpcId: vpc.vpcId,
+    vpcCidr: vpcCidr,
+    subnetIds: vpc.isolatedSubnetIds
   },
   {
     parent: this
@@ -131,13 +148,23 @@ export = async () => {
 
   // Set outputs
   return {
-    // Main VPC
+    // VPC
     vpcId: vpc.vpcId,
     vpcCidr: vpcCidr,
     publicSubnetIds: vpc.publicSubnetIds,
     privateSubnetIds: vpc.privateSubnetIds,
     isolatedSubnetIds: vpc.isolatedSubnetIds,
-    routeTables: vpc.routeTables,
-    privateRouteTables: vpc.privateRouteTables
+
+    // S3 Bucket
+    bucketName: s3Bucket.bucketName,
+    bucketArn: s3Bucket.bucketArn,
+
+    // Database credentials
+    dbClusterName: db.clusterName,
+    dbClusterPort: db.clusterPort,
+    dbClusterEndpoint: db.clusterEndpoint,
+    dbAdminUser: db.adminUser,
+    dbAdminPassword: db.adminPassword,
+
   }
 }
