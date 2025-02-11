@@ -61,6 +61,7 @@ export class EncryptedBucket extends pulumi.ComponentResource {
     const kmsKey = new aws.kms.Key(this.baseName, {
       description: `KMS key for encrypting S3 bucket ${this.baseName}`,
       deletionWindowInDays: 14,
+      tags: baseTags
     },
     {
       parent: this
