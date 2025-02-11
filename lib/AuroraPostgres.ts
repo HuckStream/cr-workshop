@@ -254,6 +254,7 @@ export class AuroraPostgres extends pulumi.ComponentResource {
       backupRetentionPeriod: 14,
       preferredBackupWindow: "07:00-09:00",
       copyTagsToSnapshot: true,
+      finalSnapshotIdentifier: [this.baseName,"final"].join("-"),
 
       // Networking
       port: this.port,

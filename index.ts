@@ -21,6 +21,15 @@ export = async () => {
     name,
   ].join("-")
 
+
+  //////
+  // Step 1
+  //
+  // Retrieve stack references and outputs for main VPC infrastructure deployment stack.
+  //////
+
+  /**
+
   // Get the VPC CIDR from config
   const vpcCidr: string = config.require("vpcCidr")
 
@@ -38,6 +47,18 @@ export = async () => {
   const openVpnVpcRtbls = openVpnStack.getOutput("privateRouteTables").apply(rtbls => {
     return rtbls as aws.ec2.RouteTable[]
   })
+
+  */
+
+  //////
+  // Step 2
+  //
+  // Deploy isolated VPC to the current region, with endpoints for required services and peering to main VPC
+  //
+  // Also uncomment outputs labeled 'VPC Outputs' at the bottom
+  //////
+
+  /**
 
   // Create VPC
   const vpc = new Vpc("vpc",{
@@ -76,7 +97,15 @@ export = async () => {
   const privateAppSubnetId = vpc.privateSubnetIds.apply(ids => ids[0])
   const isolatedDataSubnetId = vpc.isolatedSubnetIds.apply(ids => ids[1])
 
+  */
 
+
+  //////
+  // Step 3
+  //
+  // Deploy ping instances to test network connectivity
+  //////
+  /**
 
   // Get the ping instance config
   const pingAmiId = openVpnStack.getOutput("pingAmiId")
@@ -117,6 +146,17 @@ export = async () => {
     instanceProfile: pingIamRole,
   })
 
+  */
+
+
+  //////
+  // Step 4
+  //
+  // Deploy encrypted S3 bucket
+  //
+  // Also uncomment outputs labeled 'S3 Bucket Outputs' at the bottom
+  //////
+  /**
 
   // S3 Bucket
   const s3Bucket = new EncryptedBucket("encrypted-bucket",{
@@ -124,9 +164,29 @@ export = async () => {
     environment,
     name,
 
-    vpceId: vpc.s3EndpointId,
+
+    //////
+    // Step 5
+    //
+    // Provide the S3 VPC gateway endpoint to lock the S3 bucket down to only the VPC
+    //
+    // Also uncomment outputs labeled 'S3 Bucket Outputs' at the bottom
+    //////
+
+    // vpceId: vpc.s3EndpointId,
   })
 
+  */
+
+
+  //////
+  // Step 6
+  //
+  // Deploy Aurora Postgres DB Cluster
+  //
+  // Also uncomment outputs labeled 'RDS Outputs' at the bottom
+  //////
+  /**
 
   // RDS Cluster
   const db = new AuroraPostgres("postgres",{
@@ -145,26 +205,53 @@ export = async () => {
     parent: this
   })
 
+  */
+
 
   // Set outputs
   return {
-    // VPC
+    //////
+    // Step 2
+    //
+    // VPC Outputs
+    //////
+    /**
+
     vpcId: vpc.vpcId,
     vpcCidr: vpcCidr,
     publicSubnetIds: vpc.publicSubnetIds,
     privateSubnetIds: vpc.privateSubnetIds,
     isolatedSubnetIds: vpc.isolatedSubnetIds,
 
-    // S3 Bucket
+    */
+
+
+    //////
+    // Step 4
+    //
+    // S3 Bucket Outputs
+    //////
+    /**
+
     bucketName: s3Bucket.bucketName,
     bucketArn: s3Bucket.bucketArn,
 
-    // Database credentials
+    */
+
+
+    //////
+    // Step 4
+    //
+    // RDS Outputs
+    //////
+    /**
+
     dbClusterName: db.clusterName,
     dbClusterPort: db.clusterPort,
     dbClusterEndpoint: db.clusterEndpoint,
     dbAdminUser: db.adminUser,
     dbAdminPassword: db.adminPassword,
 
+    */
   }
 }
