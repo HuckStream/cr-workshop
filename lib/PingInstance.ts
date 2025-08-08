@@ -83,7 +83,7 @@ export class PingInstance extends pulumi.ComponentResource {
 
 
     // Create the security group
-    const sgName = [this.baseName,"sg"].join("-")
+    const sgName = [this.baseName, "sg"].join("-")
     const sg = new aws.ec2.SecurityGroup(sgName, {
       name: sgName,
       vpcId: this.vpcId,
@@ -109,9 +109,9 @@ export class PingInstance extends pulumi.ComponentResource {
         Name: sgName
       },
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
     this.securityGroupId = sg.id
 
@@ -148,9 +148,9 @@ export class PingInstance extends pulumi.ComponentResource {
       // Set tags
       tags: baseTags,
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
     this.publicIp = ec2.publicIp
     this.privateIp = ec2.privateIp

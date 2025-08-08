@@ -63,17 +63,17 @@ export class EncryptedBucket extends pulumi.ComponentResource {
       deletionWindowInDays: 14,
       tags: baseTags
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
     const kmsAlias = new aws.kms.Alias(this.baseName, {
       name: `alias/${this.baseName}`,
       targetKeyId: kmsKey.keyId,
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
     this.kmsKeyId = kmsKey.id
     this.kmsKeyArn = kmsKey.arn
@@ -95,9 +95,9 @@ export class EncryptedBucket extends pulumi.ComponentResource {
       },
       tags: baseTags,
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
 
     // If the VPC endpoint has been passed, set the bucket policy to restrict S3 actions to only
@@ -133,7 +133,7 @@ export class EncryptedBucket extends pulumi.ComponentResource {
     }
 
     this.bucketName = pulumi.output(this.baseName),
-    this.bucketArn = bucket.arn
+      this.bucketArn = bucket.arn
 
 
     // Register outputs
