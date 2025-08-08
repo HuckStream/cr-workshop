@@ -61,7 +61,7 @@ export = async () => {
   /**
 
   // Create VPC
-  const vpc = new Vpc("vpc",{
+  const vpc = new Vpc("vpc", {
     // Context info
     namespace,
     environment,

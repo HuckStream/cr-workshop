@@ -105,9 +105,9 @@ export class AuroraPostgres extends pulumi.ComponentResource {
       deletionWindowInDays: 14,
       tags: baseTags
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
 
     // Create a KMS Alias
@@ -115,9 +115,9 @@ export class AuroraPostgres extends pulumi.ComponentResource {
       name: `alias/${this.baseName}`,
       targetKeyId: kmsKey.keyId,
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
     this.kmsKeyId = kmsKey.id
     this.kmsKeyArn = kmsKey.arn
@@ -135,13 +135,13 @@ export class AuroraPostgres extends pulumi.ComponentResource {
         Name: subnetGroupName
       }
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
 
     // Create a security group
-    const sgName = [this.baseName,"sg"].join("-")
+    const sgName = [this.baseName, "sg"].join("-")
     const sg = new aws.ec2.SecurityGroup(sgName, {
       name: sgName,
       description: `Network permissions for Aurora Postgres cluster ${this.baseName}`,
@@ -169,9 +169,9 @@ export class AuroraPostgres extends pulumi.ComponentResource {
         Name: sgName
       },
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
 
     // Create a cluster parameter group
@@ -188,9 +188,9 @@ export class AuroraPostgres extends pulumi.ComponentResource {
         Name: clusterPaerameterGroupName
       }
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
 
     // Create a DB parameter group
@@ -207,25 +207,25 @@ export class AuroraPostgres extends pulumi.ComponentResource {
         Name: parameterGroupName
       }
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
 
     // Generate admin creds
     const dbPassword = new random.RandomPassword(`${this.baseName}-pwd`, {
-        length: 32,
-        special: false,
-        number: true,
-        upper: true,
-        lower: true,
-        minLower: 1,
-        minUpper: 1,
-        minSpecial: 0,
-        minNumeric: 1,
+      length: 32,
+      special: false,
+      number: true,
+      upper: true,
+      lower: true,
+      minLower: 1,
+      minUpper: 1,
+      minSpecial: 0,
+      minNumeric: 1,
     })
 
-    const dbUser = [this.namespace,"admin"].join("")
+    const dbUser = [this.namespace, "admin"].join("")
 
     // Create an Aurora PostgreSQL cluster
     this.cluster = new aws.rds.Cluster(`${this.baseName}-cluster`, {
@@ -254,7 +254,7 @@ export class AuroraPostgres extends pulumi.ComponentResource {
       backupRetentionPeriod: 14,
       preferredBackupWindow: "07:00-09:00",
       copyTagsToSnapshot: true,
-      finalSnapshotIdentifier: [this.baseName,"final"].join("-"),
+      finalSnapshotIdentifier: [this.baseName, "final"].join("-"),
 
       // Networking
       port: this.port,
@@ -265,24 +265,24 @@ export class AuroraPostgres extends pulumi.ComponentResource {
       // Set tags
       tags: baseTags
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
     this.clusterName = pulumi.output(this.baseName)
     this.clusterArn = this.cluster.arn
     this.clusterPort = this.cluster.port
     this.clusterEndpoint = this.cluster.endpoint
 
-    this.adminUser= pulumi.output(pulumi.secret(dbUser))
-    this.adminPassword= pulumi.output(pulumi.secret(dbPassword.result))
+    this.adminUser = pulumi.output(pulumi.secret(dbUser))
+    this.adminPassword = pulumi.output(pulumi.secret(dbPassword.result))
 
 
     // Create Aurora PostgreSQL instances
     this.instances = []
     // Create two instances for HA
-    for (let i=0; i<2; i++) {
-      const instanceName= `${this.baseName}-instance-${i}`
+    for (let i = 0; i < 2; i++) {
+      const instanceName = `${this.baseName}-instance-${i}`
       this.instances.push(new aws.rds.ClusterInstance(instanceName, {
         // Instance name
         identifier: instanceName,

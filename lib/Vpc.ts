@@ -26,7 +26,7 @@ export interface VpcInputs {
 
 export interface VpcOutputs {
   vpdId: pulumi.Output<string>
-  publicSubnetIds:  pulumi.Output<string[]>
+  publicSubnetIds: pulumi.Output<string[]>
   privateSubnetIds: pulumi.Output<string[]>
   isolatedSubnetIds: pulumi.Output<string[]>
   routeTables: pulumi.Output<aws.ec2.RouteTable[]>
@@ -78,9 +78,9 @@ export class Vpc extends pulumi.ComponentResource {
 
 
     // Create the subnet specs
-    const subnetSpecs:awsx.types.input.ec2.SubnetSpecArgs[] = []
+    const subnetSpecs: awsx.types.input.ec2.SubnetSpecArgs[] = []
 
-    if( args?.publicSubnets ) {
+    if (args?.publicSubnets) {
       const publicSubnets = {
         type: awsx.ec2.SubnetType.Public,
         name: "public"
@@ -88,7 +88,7 @@ export class Vpc extends pulumi.ComponentResource {
       subnetSpecs.push(publicSubnets)
     }
 
-    if( args?.privateAppSubnets ) {
+    if (args?.privateAppSubnets) {
       const privateAppSubnets = {
         type: awsx.ec2.SubnetType.Private,
         name: "private-app",
@@ -100,7 +100,7 @@ export class Vpc extends pulumi.ComponentResource {
       subnetSpecs.push(privateAppSubnets)
     }
 
-    if( args?.privateDataSubnets ) {
+    if (args?.privateDataSubnets) {
       const privateDataSubnets = {
         type: awsx.ec2.SubnetType.Private,
         name: "private-data",
@@ -112,7 +112,7 @@ export class Vpc extends pulumi.ComponentResource {
       subnetSpecs.push(privateDataSubnets)
     }
 
-    if( args?.isolatedDataSubnets ) {
+    if (args?.isolatedDataSubnets) {
       const isolatedDataSubnets = {
         type: awsx.ec2.SubnetType.Isolated,
         name: "isolated-data"
@@ -122,8 +122,8 @@ export class Vpc extends pulumi.ComponentResource {
 
 
     // Set NAT Gateway strategy
-    const natGwStrategy = ( args.publicSubnets && (args.privateAppSubnets || args.privateDataSubnets) ) ?
-                          awsx.ec2.NatGatewayStrategy.Single : awsx.ec2.NatGatewayStrategy.None
+    const natGwStrategy = (args.publicSubnets && (args.privateAppSubnets || args.privateDataSubnets)) ?
+      awsx.ec2.NatGatewayStrategy.Single : awsx.ec2.NatGatewayStrategy.None
 
 
     // Create the VPC
@@ -146,16 +146,16 @@ export class Vpc extends pulumi.ComponentResource {
       // Tags
       tags: baseTags,
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
     this.vpcId = vpc.vpcId
     this.publicSubnetIds = vpc.publicSubnetIds
     this.privateSubnetIds = vpc.privateSubnetIds
     this.isolatedSubnetIds = vpc.isolatedSubnetIds
     this.routeTables = vpc.routeTables
-    this.privateRouteTables = vpc.routeTables.apply( rtbls =>
+    this.privateRouteTables = vpc.routeTables.apply(rtbls =>
       pulumi.all(
         rtbls.map(rtbl =>
           rtbl.tags.apply(tags =>
@@ -164,7 +164,7 @@ export class Vpc extends pulumi.ComponentResource {
         )
       ).apply(results =>
         results.filter(rtbl => rtbl.tags?.SubnetType === "Private")
-               .map(result => result.rtbl)
+          .map(result => result.rtbl)
       )
     )
 
@@ -178,12 +178,12 @@ export class Vpc extends pulumi.ComponentResource {
       routeTableIds: vpc.routeTables.apply(routeTables => routeTables.map(rtbl => rtbl.id)),
       tags: {
         ...baseTags,
-        Name: [this.baseName,"dynamodb"].join("-")
+        Name: [this.baseName, "dynamodb"].join("-")
       },
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
     this.dynamodbEndpointId = dynamodbEndpoint.id
 
@@ -196,19 +196,19 @@ export class Vpc extends pulumi.ComponentResource {
       routeTableIds: vpc.routeTables.apply(routeTables => routeTables.map(rtbl => rtbl.id)),
       tags: {
         ...baseTags,
-        Name: [this.baseName,"s3"].join("-")
+        Name: [this.baseName, "s3"].join("-")
       },
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
     this.s3EndpointId = s3Endpoint.id
 
 
     // Interface Endpoints
     // Security group
-    const vpceSgName = [this.baseName,"vpce","sg"].join("-")
+    const vpceSgName = [this.baseName, "vpce", "sg"].join("-")
     const vpceSg = new aws.ec2.SecurityGroup("vpce-security-group", {
       name: vpceSgName,
       vpcId: this.vpcId,
@@ -236,12 +236,12 @@ export class Vpc extends pulumi.ComponentResource {
         Name: vpceSgName
       },
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
     const interfaceEndpoints = []
-    args.interfaceEndpoints?.forEach( service => {
+    args.interfaceEndpoints?.forEach(service => {
       const vpce = new aws.ec2.VpcEndpoint(service, {
         vpcId: vpc.vpcId,
         serviceName: `com.amazonaws.${args.region}.${service}`,
@@ -251,12 +251,12 @@ export class Vpc extends pulumi.ComponentResource {
         privateDnsEnabled: true,
         tags: {
           ...baseTags,
-          Name: [this.baseName,service].join("-")
+          Name: [this.baseName, service].join("-")
         },
       },
-      {
-        parent: this
-      })
+        {
+          parent: this
+        })
 
       interfaceEndpoints.push(vpce)
     })
@@ -268,9 +268,9 @@ export class Vpc extends pulumi.ComponentResource {
       routes: [],
       tags: baseTags
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
 
     // Configure the VPC default security group
@@ -280,17 +280,17 @@ export class Vpc extends pulumi.ComponentResource {
       egress: [],
       tags: {
         ...baseTags,
-        Name: [this.baseName,"default"].join("-")
+        Name: [this.baseName, "default"].join("-")
       }
     },
-    {
-      parent: this
-    })
+      {
+        parent: this
+      })
 
 
     // Configure the VPC peering
-    let openVpnVpc:aws.ec2.VpcPeeringConnection | undefined = undefined
-    if( args?.openVpnVpcId ) {
+    let openVpnVpc: aws.ec2.VpcPeeringConnection | undefined = undefined
+    if (args?.openVpnVpcId) {
       // Create the peering
       openVpnVpc = new aws.ec2.VpcPeeringConnection("openVpnVpc", {
         peerVpcId: args.openVpnVpcId,
@@ -298,40 +298,40 @@ export class Vpc extends pulumi.ComponentResource {
         autoAccept: true,
         tags: {
           ...baseTags,
-          Name: [this.baseName,"main"].join("-")
+          Name: [this.baseName, "main"].join("-")
         }
       },
-      {
-        parent: this
-      })
+        {
+          parent: this
+        })
 
       // Configure local subnet routes
       this.privateRouteTables.apply(routeTables => {
         routeTables.forEach(routeTable => {
           routeTable.id.apply(routeTableId => {
-            const route = new aws.ec2.Route(`${args.name}-${routeTableId}-main`,{
+            const route = new aws.ec2.Route(`${args.name}-${routeTableId}-main`, {
               routeTableId: routeTableId,
               destinationCidrBlock: args.openVpnVpcCidr,
               vpcPeeringConnectionId: openVpnVpc?.id
             },
-            {
-              parent: openVpnVpc
-            })
+              {
+                parent: openVpnVpc
+              })
           })
         })
       })
 
       // Configure main vpc subnet routes
-      if( args?.openVpnVpcRtbls ) {
+      if (args?.openVpnVpcRtbls) {
         const routeTables = args.openVpnVpcRtbls
         routeTables.apply(
           routeTables => {
             routeTables.forEach(routeTable => {
-                const route = new aws.ec2.Route(`main-${routeTable.id}-${args.name}`,{
-                  routeTableId: routeTable.id,
-                  destinationCidrBlock: args.cidr,
-                  vpcPeeringConnectionId: openVpnVpc?.id
-                },
+              const route = new aws.ec2.Route(`main-${routeTable.id}-${args.name}`, {
+                routeTableId: routeTable.id,
+                destinationCidrBlock: args.cidr,
+                vpcPeeringConnectionId: openVpnVpc?.id
+              },
                 {
                   parent: openVpnVpc
                 })
