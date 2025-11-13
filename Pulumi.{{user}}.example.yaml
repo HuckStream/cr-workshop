@@ -1,5 +1,6 @@
 environment:
   - aws/wksp
 config:
+  aws:region: us-east-1
   environment: {{user}}
   vpcCidr: {{vpcCidr}}
