@@ -18,10 +18,10 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@pulumi/aws": "~7.3",
-    "@pulumi/awsx": "~3.0",
-    "@pulumi/pulumi": "~3.181",
-    "@pulumi/pulumiservice": "~0.31",
+    "@pulumi/aws": "~7.11",
+    "@pulumi/awsx": "~3.1",
+    "@pulumi/pulumi": "~3.207",
+    "@pulumi/pulumiservice": "~0.32",
     "@pulumi/random": "^4.18.0",
     "@pulumi/tls": "~5.2"
   }
