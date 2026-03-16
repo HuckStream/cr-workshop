@@ -25,7 +25,7 @@ export interface VpcInputs {
 
 
 export interface VpcOutputs {
-  vpdId: pulumi.Output<string>
+  vpcId: pulumi.Output<string>
   publicSubnetIds: pulumi.Output<string[]>
   privateSubnetIds: pulumi.Output<string[]>
   isolatedSubnetIds: pulumi.Output<string[]>
@@ -343,14 +343,14 @@ export class Vpc extends pulumi.ComponentResource {
 
     // Register outputs
     this.registerOutputs({
-      vpdId: this.vpcId,
+      vpcId: this.vpcId,
       publicSubnetIds: this.publicSubnetIds,
       privateSubnetIds: this.privateSubnetIds,
       isolatedSubnetIds: this.isolatedSubnetIds,
       routeTables: this.routeTables,
       privateRouteTables: this.privateRouteTables,
       dynamodbEndpointId: this.dynamodbEndpointId,
-      s3EndpointId: this.dynamodbEndpointId,
+      s3EndpointId: this.s3EndpointId,
     })
   }
 }
