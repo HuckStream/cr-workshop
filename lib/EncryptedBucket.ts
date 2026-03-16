@@ -82,18 +82,34 @@ export class EncryptedBucket extends pulumi.ComponentResource {
     // Create an S3 Bucket encrypted with the KMS Key
     const bucket = new aws.s3.Bucket(this.baseName, {
       bucket: this.baseName,
-      versioning: {
-        enabled: true
-      },
-      serverSideEncryptionConfiguration: {
-        rule: {
+      tags: baseTags,
+    },
+      {
+        parent: this
+      })
+
+    // Enable versioning on the bucket
+    const bucketVersioning = new aws.s3.BucketVersioning(this.baseName, {
+      bucket: bucket.id,
+      versioningConfiguration: {
+        status: "Enabled"
+      }
+    },
+      {
+        parent: this
+      })
+
+    // Configure server-side encryption
+    const bucketEncryption = new aws.s3.BucketServerSideEncryptionConfiguration(this.baseName, {
+      bucket: bucket.id,
+      rules: [
+        {
           applyServerSideEncryptionByDefault: {
             sseAlgorithm: "aws:kms",
             kmsMasterKeyId: kmsKey.arn,
           },
         },
-      },
-      tags: baseTags,
+      ],
     },
       {
         parent: this

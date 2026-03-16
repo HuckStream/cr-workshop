@@ -18,7 +18,7 @@ export interface AuroraPostgresArgs {
 }
 
 
-export interface EncryptedBucketOutputs {
+export interface AuroraPostgresOutputs {
   kmsKeyId: pulumi.Output<string>
   kmsKeyArn: pulumi.Output<string>
   kmsAliasArn: pulumi.Output<string>
@@ -216,7 +216,7 @@ export class AuroraPostgres extends pulumi.ComponentResource {
     const dbPassword = new random.RandomPassword(`${this.baseName}-pwd`, {
       length: 32,
       special: false,
-      number: true,
+      numeric: true,
       upper: true,
       lower: true,
       minLower: 1,
