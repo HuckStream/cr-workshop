@@ -34,7 +34,7 @@ export = async () => {
   const vpcCidr: string = config.require("vpcCidr")
 
   // Get the current AWS region
-  const region = await aws.getRegion().then(region => region.name)
+  const region = await aws.getRegion().then(region => region.region)
 
   // Reference bootstrapping stack
   const openVpnStack = new pulumi.StackReference(config.require("openVpnStack"))
