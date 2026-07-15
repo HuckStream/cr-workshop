@@ -147,7 +147,7 @@ Log into AWS SSO via the start URL and verify access to account
 
 - Attempt successful connection to database
   ```bash
-  psql -U huckstremadmin -p 5432 -h huckstream-wksp-ckoning-psql.cluster-c3qokks4q6jn.us-east-1.rds.amazonaws.com
+  psql -U huckstreamadmin -p 5432 -h huckstream-wksp-ckoning-psql.cluster-c3qokks4q6jn.us-east-1.rds.amazonaws.com
   ```
 
 - Connect to main vpc private instance using SSM connect
@@ -159,5 +159,5 @@ Log into AWS SSO via the start URL and verify access to account
 
 - Attempt failed connection to database
   ```bash
-  psql -U huckstremadmin -p 5432 -h huckstream-wksp-ckoning-psql.cluster-c3qokks4q6jn.us-east-1.rds.amazonaws.com
+  psql -U huckstreamadmin -p 5432 -h huckstream-wksp-ckoning-psql.cluster-c3qokks4q6jn.us-east-1.rds.amazonaws.com
   ```
