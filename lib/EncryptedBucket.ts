@@ -148,8 +148,8 @@ export class EncryptedBucket extends pulumi.ComponentResource {
       })
     }
 
-    this.bucketName = pulumi.output(this.baseName),
-      this.bucketArn = bucket.arn
+    this.bucketName = pulumi.output(this.baseName)
+    this.bucketArn = bucket.arn
 
 
     // Register outputs
