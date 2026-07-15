@@ -254,7 +254,11 @@ export class AuroraPostgres extends pulumi.ComponentResource {
       backupRetentionPeriod: 14,
       preferredBackupWindow: "07:00-09:00",
       copyTagsToSnapshot: true,
-      finalSnapshotIdentifier: [this.baseName, "final"].join("-"),
+      // Workshop clusters are torn down repeatedly; skip the final snapshot so
+      // `pulumi destroy` is fast and doesn't leave paid snapshots behind.
+      //
+      // finalSnapshotIdentifier: [this.baseName, "final"].join("-"),
+      skipFinalSnapshot: true,
 
       // Networking
       port: this.port,
