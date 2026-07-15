@@ -175,17 +175,17 @@ export class AuroraPostgres extends pulumi.ComponentResource {
 
 
     // Create a cluster parameter group
-    const clusterPaerameterGroupName = `${this.baseName}-cpg`
-    const clustserParameterGroup = new aws.rds.ClusterParameterGroup(clusterPaerameterGroupName, {
-      name: clusterPaerameterGroupName,
+    const clusterParameterGroupName = `${this.baseName}-cpg`
+    const clusterParameterGroup = new aws.rds.ClusterParameterGroup(clusterParameterGroupName, {
+      name: clusterParameterGroupName,
       family: `aurora-postgresql${this.majorEngineVersion}`,
       description: `Cluster parameter group for ${this.baseName}`,
       parameters: [
-        // Override Auorora Postgres Default cluster db parameters here
+        // Override Aurora Postgres Default cluster db parameters here
       ],
       tags: {
         ...baseTags,
-        Name: clusterPaerameterGroupName
+        Name: clusterParameterGroupName
       }
     },
       {
@@ -200,7 +200,7 @@ export class AuroraPostgres extends pulumi.ComponentResource {
       family: `aurora-postgresql${this.majorEngineVersion}`,
       description: `Cluster instance parameter group for ${this.baseName}`,
       parameters: [
-        // Override Auorora Postgres default cluster instance db parameters here
+        // Override Aurora Postgres default cluster instance db parameters here
       ],
       tags: {
         ...baseTags,
@@ -235,7 +235,7 @@ export class AuroraPostgres extends pulumi.ComponentResource {
       // Engine config
       engine: "aurora-postgresql",
       engineVersion: this.engineVersion,
-      dbClusterParameterGroupName: clustserParameterGroup.name,
+      dbClusterParameterGroupName: clusterParameterGroup.name,
 
       // Admin password
       masterUsername: dbUser,
