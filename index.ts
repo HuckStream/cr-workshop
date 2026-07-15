@@ -200,9 +200,6 @@ export = async () => {
     vpcId: vpc.vpcId,
     vpcCidr: vpcCidr,
     subnetIds: vpc.isolatedSubnetIds
-  },
-  {
-    parent: this
   })
 
   */
