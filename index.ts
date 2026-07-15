@@ -34,7 +34,7 @@ export = async () => {
   const vpcCidr: string = config.require("vpcCidr")
 
   // Get the current AWS region
-  const region = await aws.getRegion().then(region => region.name)
+  const region = await aws.getRegion().then(region => region.region)
 
   // Reference bootstrapping stack
   const openVpnStack = new pulumi.StackReference(config.require("openVpnStack"))
@@ -78,7 +78,7 @@ export = async () => {
     openVpnVpcRtbls,
 
     // VPC interface endpoint configuration
-    // AWS region (convenince for interface endpoint definitions)
+    // AWS region (convenience for interface endpoint definitions)
     region,
 
     // See https://docs.aws.amazon.com/vpc/latest/privatelink/aws-services-privatelink-support.html for supported services
@@ -112,11 +112,11 @@ export = async () => {
   const pingIamRole = openVpnStack.getOutput("pingIamRole")
 
   // Create main ping instances
-  const privateAppPing = new PingInstance("ping-private-app",{
+  const privateAppPing = new PingInstance("ping-private-app", {
     // Context
     namespace,
     environment,
-    name: [name,"ping","private","app"].join("-"),
+    name: [name, "ping", "private", "app"].join("-"),
 
     // Networking
     vpcId: vpc.vpcId,
@@ -129,11 +129,11 @@ export = async () => {
     instanceProfile: pingIamRole,
   })
 
-  const privateDataPing = new PingInstance("ping-isolated-data",{
+  const privateDataPing = new PingInstance("ping-isolated-data", {
     // Context
     namespace,
     environment,
-    name: [name,"ping","isolated","data"].join("-"),
+    name: [name, "ping", "isolated", "data"].join("-"),
 
     // Networking
     vpcId: vpc.vpcId,
@@ -159,7 +159,7 @@ export = async () => {
   /**
 
   // S3 Bucket
-  const s3Bucket = new EncryptedBucket("encrypted-bucket",{
+  const s3Bucket = new EncryptedBucket("encrypted-bucket", {
     namespace,
     environment,
     name,
@@ -200,9 +200,6 @@ export = async () => {
     vpcId: vpc.vpcId,
     vpcCidr: vpcCidr,
     subnetIds: vpc.isolatedSubnetIds
-  },
-  {
-    parent: this
   })
 
   */

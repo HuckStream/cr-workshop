@@ -23,7 +23,7 @@ export class EncryptedBucket extends pulumi.ComponentResource {
   // Context inputs
   public readonly namespace: string
   public readonly environment: string
-  public readonly name: String
+  public readonly name: string
 
   protected baseName: string
 
@@ -148,8 +148,8 @@ export class EncryptedBucket extends pulumi.ComponentResource {
       })
     }
 
-    this.bucketName = pulumi.output(this.baseName),
-      this.bucketArn = bucket.arn
+    this.bucketName = pulumi.output(this.baseName)
+    this.bucketArn = bucket.arn
 
 
     // Register outputs

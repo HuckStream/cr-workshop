@@ -10,7 +10,7 @@ config:
       workshop: "true"
   namespace:
     type: string
-    description: Namsepace for resources.
+    description: Namespace for resources.
     default: huckstream
   environment:
     type: string

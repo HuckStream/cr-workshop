@@ -35,7 +35,7 @@ export class AuroraPostgres extends pulumi.ComponentResource {
   // Context inputs
   public readonly namespace: string
   public readonly environment: string
-  public readonly name: String
+  public readonly name: string
 
   protected baseName: string
 
@@ -175,17 +175,17 @@ export class AuroraPostgres extends pulumi.ComponentResource {
 
 
     // Create a cluster parameter group
-    const clusterPaerameterGroupName = `${this.baseName}-cpg`
-    const clustserParameterGroup = new aws.rds.ClusterParameterGroup(clusterPaerameterGroupName, {
-      name: clusterPaerameterGroupName,
+    const clusterParameterGroupName = `${this.baseName}-cpg`
+    const clusterParameterGroup = new aws.rds.ClusterParameterGroup(clusterParameterGroupName, {
+      name: clusterParameterGroupName,
       family: `aurora-postgresql${this.majorEngineVersion}`,
       description: `Cluster parameter group for ${this.baseName}`,
       parameters: [
-        // Override Auorora Postgres Default cluster db parameters here
+        // Override Aurora Postgres Default cluster db parameters here
       ],
       tags: {
         ...baseTags,
-        Name: clusterPaerameterGroupName
+        Name: clusterParameterGroupName
       }
     },
       {
@@ -200,7 +200,7 @@ export class AuroraPostgres extends pulumi.ComponentResource {
       family: `aurora-postgresql${this.majorEngineVersion}`,
       description: `Cluster instance parameter group for ${this.baseName}`,
       parameters: [
-        // Override Auorora Postgres default cluster instance db parameters here
+        // Override Aurora Postgres default cluster instance db parameters here
       ],
       tags: {
         ...baseTags,
@@ -235,7 +235,7 @@ export class AuroraPostgres extends pulumi.ComponentResource {
       // Engine config
       engine: "aurora-postgresql",
       engineVersion: this.engineVersion,
-      dbClusterParameterGroupName: clustserParameterGroup.name,
+      dbClusterParameterGroupName: clusterParameterGroup.name,
 
       // Admin password
       masterUsername: dbUser,
@@ -254,7 +254,11 @@ export class AuroraPostgres extends pulumi.ComponentResource {
       backupRetentionPeriod: 14,
       preferredBackupWindow: "07:00-09:00",
       copyTagsToSnapshot: true,
-      finalSnapshotIdentifier: [this.baseName, "final"].join("-"),
+      // Workshop clusters are torn down repeatedly; skip the final snapshot so
+      // `pulumi destroy` is fast and doesn't leave paid snapshots behind.
+      //
+      // finalSnapshotIdentifier: [this.baseName, "final"].join("-"),
+      skipFinalSnapshot: true,
 
       // Networking
       port: this.port,
